@@ -41,16 +41,19 @@ public enum ProficiencyLevel {
     }
 
     // Proficiency threshold array | Computes the proficiency level using a required no. points to level up
+    // thresholds[i] | Points needed to reach next level (i+1)
+    // e.g. thresholds[0] = 100, which means 100 points needed for next level, RUDIMENTARY
     public static ProficiencyLevel fromPoints(long points, long[] thresholds) {
-        int levelIndex = 0; // Indicates the proficiency level
+        int levelIndex = 0; // Indicates the proficiency level, starts at UNTRAINED
 
         for (int i=0; i<Math.min(thresholds.length, MASTERFUL.ordinal()); i++) {
             if (points >= thresholds[i]) { // if player has enough points, update levelIndex
                 levelIndex = i + 1;
             } else {
-                break; // stop checking once the threshold not met is found
+                break; // stop checking at the first threshold not reached
             }
         }
+        // Ensures that MASTERFUL is not exceeded for base progression
         return ProficiencyLevel.values()[Math.min(levelIndex, MASTERFUL.ordinal())];
     }
 
