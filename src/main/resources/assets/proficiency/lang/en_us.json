@@ -1,0 +1,18 @@
+{
+  "title.proficiency.config": "Proficiency Configuration",
+  "category.proficiency.general": "General",
+  "option.proficiency.exponential_scaling": "Exponential Scaling",
+  "tooltip.proficiency.exponential_scaling": "Use exponential scaling for thresholds (makes progression harder)",
+  
+  "category.proficiency.tools": "Tools",
+  "category.proficiency.weapons": "Weapons",
+  "category.proficiency.armor": "Armor",
+  
+  "tooltip.proficiency.threshold": "Points required to reach %s level",
+  "tooltip.proficiency.virtuoso_items": "Number of items at PROFICIENT+ to unlock Virtuoso",
+  "tooltip.proficiency.virtuoso_threshold": "Points required for Virtuoso level",
+  "tooltip.proficiency.legendary_items": "Number of items at PROFICIENT+ to unlock Legendary",
+  "tooltip.proficiency.legendary_threshold": "Points required for Legendary level",
+  "tooltip.proficiency.unrivaled_items": "Number of items at PROFICIENT+ to unlock Unrivaled",
+  "tooltip.proficiency.unrivaled_threshold": "Points required for Unrivaled level"
+}

@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "proficiency",
+  "version": "${version}",
+  "name": "Proficiency",
+  "description": "Adds levels to items, the more you use them the more effective they become.",
+  "authors": [
+    "oJxcob"
+  ],
+  "contact": {
+    "homepage": "https://github.com/oJxcob",
+    "sources": "https://github.com/oJxcob/Proficiency"
+  },
+  "license": "CC0-1.0",
+  "icon": "assets/proficiency/icon.png",
+  "environment": "*",
+
+  "entrypoints": {
+    "main": [
+      "proficiency.modid.Proficiency"
+    ],
+    "client": [
+      "proficiency.modid.ProficiencyClient"
+    ],
+    "cardinal-components": [
+      "proficiency.modid.component.ProficiencyComponents"
+    ],
+    "modmenu": [
+      "proficiency.modid.integration.ModMenuIntegration"
+    ]
+  },
+
+  "mixins": [
+    "proficiency.mixins.json",
+    {
+      "config": "proficiency.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+
+  "depends": {
+    "fabricloader": ">=0.14.0",
+    "minecraft": "~1.20.1",
+    "java": ">=17",
+    "fabric-api": "*",
+    "cardinal-components-api": ">=5.0.0"
+  },
+
+  "suggests": {
+    "cloth-config": ">=11.0.0",
+    "modmenu": ">=7.0.0"
+  }
+}
