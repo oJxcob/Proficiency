@@ -11,14 +11,18 @@ import proficiency.modid.proficiency.ProficiencyData;
 
 public final class ProficiencyComponents implements EntityComponentInitializer {
 
-    public static final ComponentKey<ProficiencyData> PROFICIENCY =
-            ComponentRegistry.getOrCreate(
-                    new Identifier(Proficiency.MOD_ID, "proficiency"),
-                    ProficiencyData.class
-            );
+    // Initialize the ComponentKey lazily, after Cardinal Components is ready
+    public static ComponentKey<ProficiencyData> PROFICIENCY;
 
     @Override
     public void registerEntityComponentFactories(EntityComponentFactoryRegistry registry) {
+        // Register the component key here
+        PROFICIENCY = ComponentRegistry.getOrCreate(
+                new Identifier(Proficiency.MOD_ID, "proficiency"),
+                ProficiencyData.class
+        );
+
+        // Then register for players
         registry.registerForPlayers(
                 PROFICIENCY,
                 player -> new ProficiencyData(),

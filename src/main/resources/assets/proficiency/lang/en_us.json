@@ -1,18 +1,67 @@
 {
+  "_comment": "CONFIG TITLE SCREEN",
   "title.proficiency.config": "Proficiency Configuration",
+
+
+  "_comment": "GENERAL CATEGORY",
   "category.proficiency.general": "General",
-  "option.proficiency.exponential_scaling": "Exponential Scaling",
-  "tooltip.proficiency.exponential_scaling": "Use exponential scaling for thresholds (makes progression harder)",
-  
+
+  "option.proficiency.exponential_scaling": "Use Exponential Scaling",
+  "tooltip.proficiency.exponential_scaling": "Use exponential scaling instead of values defined on the tools/weapons/armour pages",
+
+  "text.proficiency.expo_equation": "   This is calculated using:\n  • Base * (Multiplier^Exponent)",
+  "text.proficiency.points_description": "The number of points a player needs to gain for each level is calculated using the exponential formula above.\nDepending on the values set, this can make progression significantly (exponentially) slower at higher levels.",
+
+  "option.proficiency.expo_base": "Base",
+  "tooltip.proficiency.expo_base": "The value needed to reach the first level",
+
+  "option.proficiency.expo_multiplier": "Multiplier",
+  "tooltip.proficiency.expo_multiplier": "The value increased exponentially",
+
+  "option.proficiency.expo_power": "Exponent",
+  "tooltip.proficiency.expo_power": "Controls the curve of the exponential growth",
+
+  "tooltip.proficiency.requires_restart": "§eRequires game restart to take effect",
+
+
+  "_comment": "TOOLS CATEGORY",
   "category.proficiency.tools": "Tools",
+
+  "_comment": "WEAPONS CATEGORY",
   "category.proficiency.weapons": "Weapons",
-  "category.proficiency.armor": "Armor",
-  
-  "tooltip.proficiency.threshold": "Points required to reach %s level",
+
+
+  "_comment": "ARMOUR CATEGORY",
+  "category.proficiency.armour": "Armour",
+
+
+  "_comment": "SHARED: THRESHOLD SETTINGS",
+  "text.proficiency.item_category_heading": "Item Type Progression Settings",
+  "text.proficiency.item_category_description": "These are set values for the points required to reach each Proficiency level",
+
+
+  "_comment": "SHARED: BASE THRESHOLDS",
+  "option.proficiency.threshold_label": "Points until %s",
+  "tooltip.proficiency.threshold": "Points required to reach %s",
+
+
+  "_comment": "SHARED: SPECIAL UNLOCKS",
+  "text.proficiency.general_heading": "\nSpecial Unlocks Settings",
+  "text.proficiency.special_unlocks_description": "These are special progression levels unlockable by both:\n  - Levelling a \"number\" of items to \"Proficient\"\n  - Reaching \"number\" of points for that item type\n   (Where \"number\" is a value set in the below fields)",
+  "text.proficiency.special_unlocks_example": "e.g. To unlock the Legendary Progression level for a pickaxe, (using the default values) you need to get 3 items to, or above,  Proficient\nYou then need to reach 25000 Progression points on that item",
+
+  "option.proficiency.virtuoso_items_label": "Virtuoso Items",
   "tooltip.proficiency.virtuoso_items": "Number of items at PROFICIENT+ to unlock Virtuoso",
+  "option.proficiency.virtuoso_threshold_label": "Virtuoso Points",
   "tooltip.proficiency.virtuoso_threshold": "Points required for Virtuoso level",
+
+  "option.proficiency.legendary_items_label": "Legendary Items",
   "tooltip.proficiency.legendary_items": "Number of items at PROFICIENT+ to unlock Legendary",
+  "option.proficiency.legendary_threshold_label": "Legendary Points",
   "tooltip.proficiency.legendary_threshold": "Points required for Legendary level",
+
+  "option.proficiency.unrivaled_items_label": "Unrivaled Items",
   "tooltip.proficiency.unrivaled_items": "Number of items at PROFICIENT+ to unlock Unrivaled",
+  "option.proficiency.unrivaled_threshold_label": "Unrivaled Points",
   "tooltip.proficiency.unrivaled_threshold": "Points required for Unrivaled level"
 }

@@ -16,6 +16,10 @@ public class ProficiencyConfig {
     private static final File CONFIG_FILE = new File("Config/proficiency.json");
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
+    public double expoBase = 100.0;
+    public double expoMultiplier = 1.5;
+    public double expoPower = 1.1;
+
     // General Settings
     // Increase Proficiency levels exponentially:
     public boolean useExponentialScaling = false;
@@ -38,8 +42,8 @@ public class ProficiencyConfig {
             5, 30000
     );
 
-    // Armor: helmets, chestplates, leggings, boots, elytra, turtle shell
-    public CategoryThresholds armor = new CategoryThresholds(
+    // Armour: helmets, chestplates, leggings, boots, elytra, turtle shell
+    public CategoryThresholds armour = new CategoryThresholds(
             new long[]{100, 200, 300, 500, 750, 1000, 1500, 2500, 3500, 4500, 5500, 7500, 10000, 12500, 15000},
             2, 20000,
             3, 25000,
@@ -90,6 +94,23 @@ public class ProficiencyConfig {
         }
     }
 
+    // Method to get values for config threshold calculations
+    public long getThresholdForLevel(String category, int level) {
+        if (useExponentialScaling) {
+            return (long) (expoBase * Math.pow(expoMultiplier, Math.pow(level, expoPower)));
+        } else {
+            // Get category thresholds;
+            CategoryThresholds thresholds;
+            switch (category.toLowerCase()) {
+                case "tools" -> thresholds = this.tools;
+                case "weapons" -> thresholds = this.weapons;
+                case "armour" -> thresholds = this.armour;
+                default -> throw new IllegalArgumentException("Unknown category " + category);
+            }
+            int safeLevel = Math.min(level, thresholds.baseThresholds.length - 1);
+            return thresholds.baseThresholds[Math.min(0, safeLevel)];
+        }
+    }
 
     // Load config from file, or create default if it doesn't exist. Called during mod initialisation
     public static ProficiencyConfig load() {
@@ -133,4 +154,7 @@ public class ProficiencyConfig {
         return INSTANCE;
     }
 
+    public double getExpoBase() { return expoBase; }
+    public double getExpoMultiplier() { return expoMultiplier; }
+    public double getExpoPower() { return expoPower; }
 }
