@@ -10,45 +10,36 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-// This is a class that stores all proficiency data for a single player
-
-/** It tracks:
- * Per-type progress: e.g. All pickaxe type tools have a proficiency level
- * Per-item progressL e.g. This specific pickaxe has its own proficiency level
- * */
-// This class is attached to PlayerEntity via Cardinal Components API
-
+/**
+ * Stores all proficiency data for a single player.
+ * Tracks both per-type progress (e.g., all pickaxes) and per-item progress (specific pickaxe instance).
+ * Attached to PlayerEntity via Cardinal Components API.
+ */
 public class ProficiencyData implements Component {
 
-    // (Constant) An NBT key for storing the UUID on an ItemStack's NBT data
-    // When an item is saved, a unique ID is embedded so it can be tracked across sessions (persistent data storage)
     public static final String ITEM_UUID_KEY = "ProficiencyUUID";
 
-    // This is an inner class that represents the state of a single proficiency log/tracking-thing (idk how to word it)
-    /** It stores:
-     * - points: The accumulated item usage (hits, blocks broken, similar)
-     * - level: The derived ProficiencyLevel based on points and thresholds defined in the config
-     * */
+    /**
+     * Represents the state of a single proficiency tracker.
+     * Stores points (accumulated usage) and the derived level.
+     */
     public static final class Progress {
-        public long points;            // Total accumulated points
-        public ProficiencyLevel level; // Derived level
+        public long points;
+        public ProficiencyLevel level;
 
-        // Initial values for  progress
         public Progress() {
             this.points = 0;
             this.level = ProficiencyLevel.UNTRAINED;
         }
 
-        // A method to update the level based on `points` and a threshold array
-        // Called whenever `points` change
-        public void updateLevel() {
-            ProficiencyConfig config = ProficiencyConfig.get();
-            // For now, use tools thresholds as default (plan to add category detection later)
-            long[] thresholds = config.tools.getScaledThresholds(config.useExponentialScaling);
+        /**
+         * Updates level based on points and config thresholds.
+         * @param thresholds Array of point thresholds for each level
+         */
+        public void updateLevel(long[] thresholds) {
             this.level = ProficiencyLevel.fromPoints(this.points, thresholds);
         }
 
-        // A method to serialise progress to NBT (convert in-memory data to storable, NBT data)
         public NbtCompound toNbt() {
             NbtCompound nbt = new NbtCompound();
             nbt.putLong("points", this.points);
@@ -56,96 +47,232 @@ public class ProficiencyData implements Component {
             return nbt;
         }
 
-        // A method to de-serialise progress from NBT
         public static Progress fromNbt(NbtCompound nbt) {
             Progress p = new Progress();
             p.points = nbt.getLong("points");
-            p.level = ProficiencyLevel.valueOf(nbt.getString("level"));
+            try {
+                p.level = ProficiencyLevel.valueOf(nbt.getString("level"));
+            } catch (IllegalArgumentException e) {
+                p.level = ProficiencyLevel.UNTRAINED;
+            }
             return p;
         }
     }
 
-    // A final variable, typeProgress, that has a key and value that tracks progression for each item type
-    // Key: Identifier like "c:pickaxes" (from tags)
-    // Value: Progress object with points and level
-    private final Map<Identifier, Progress> typeProgress = new HashMap<>();
+    // Per-type progress: tracks categories like "pickaxe", "sword", etc.
+    private final Map<String, Progress> typeProgress = new HashMap<>();
 
-    // A final variable, itemProgress, that has a key and value that tracks progression for each individual item
-    // Key: UUID embedded in the item's NBT
-    // Value: Progress object with points and level
+    // Per-item progress: tracks individual item instances by UUID
     private final Map<UUID, Progress> itemProgress = new HashMap<>();
 
-    /** Learning note: computeIfAbsent is a Map method that:
-     * - If the key exists, returns the existing value
-     * - If the key doesn't exist, uses the lambda expression (id -> new Progress()) to create a new instance of Progress
-     * This ensures that there is always a Progress object for a type (like at first access)
-    */
-    // Gets or creates an entry of the Progress object for an item type
-    public Progress getOrCreateType(Identifier typeId) {
-        return typeProgress.computeIfAbsent(typeId, id -> new Progress());
+    // Tracks previous levels for level-up detection
+    private final Map<String, ProficiencyLevel> previousLevels = new HashMap<>();
+
+    /**
+     * Gets or creates Progress for an item type category.
+     * @param category Category identifier like "pickaxe", "sword", "tools"
+     */
+    public Progress getOrCreateType(String category) {
+        return typeProgress.computeIfAbsent(category, k -> new Progress());
     }
 
-    // Gets for creates an entry of the Progress object for an individual item
+    /**
+     * Gets or creates Progress for a specific item instance.
+     */
     public Progress getOrCreateItem(UUID uuid) {
-        return itemProgress.computeIfAbsent(uuid, id -> new Progress());
+        return itemProgress.computeIfAbsent(uuid, k -> new Progress());
     }
 
-    // A method that retrieves the Progres of an item type, or null if it doesn't exist
-    public Progress getType(Identifier typeId) {
-        return typeProgress.get(typeId);
+    public Progress getType(String category) {
+        return typeProgress.get(category);
     }
 
-    // A method that retrieves the Progres of an individual item, or null if it doesn't exist
     public Progress getItem(UUID uuid) {
         return itemProgress.get(uuid);
     }
 
+    /**
+     * Adds points to a category or item and updates its level.
+     * @param id Category name (e.g., "pickaxe") or UUID string
+     * @param amount Points to add
+     */
+    public void addPoints(String id, long amount) {
+        if (amount <= 0) return;
 
-    /** ItemStack:
-     * - A data container that represents a "stack" of items in Minecraft (any item, not literally 16 or 64)
-     * - It contains:
-     *      - Item type
-     *      - Count (no. of items in stack, up to max stack size)
-     *      - Optional NBT data (like enchantments, durability, etc.)
-     * */
+        // Determine if this is a UUID or category
+        Progress progress;
+        long[] thresholds;
 
-    // Ensures an ItemStack has a unique UUID in its NBT
-    // Uses getOrCreateNbt() method to return (or create if non-existent) the item's NBT
-    // Uses containsUuid() method to check if the UUID key exists, if not a random UUID is generated and stored
-    //     - This is used as the key in itemProgress map to track this specific item
+        try {
+            // Try parsing as UUID first (for individual items)
+            UUID uuid = UUID.fromString(id);
+            progress = getOrCreateItem(uuid);
+            thresholds = getThresholdsForCategory("tools"); // Default for now
+        } catch (IllegalArgumentException e) {
+            // Not a UUID, treat as category
+            progress = getOrCreateType(id);
+            thresholds = getThresholdsForCategory(id);
+        }
+
+        progress.points += amount;
+        progress.updateLevel(thresholds);
+    }
+
+    /**
+     * Gets the current proficiency level for a category or item.
+     */
+    public ProficiencyLevel getLevel(String id) {
+        Progress progress;
+
+        try {
+            UUID uuid = UUID.fromString(id);
+            progress = getItem(uuid);
+        } catch (IllegalArgumentException e) {
+            progress = getType(id);
+        }
+
+        return progress != null ? progress.level : ProficiencyLevel.UNTRAINED;
+    }
+
+    /**
+     * Gets the previous level (before last update) for level-up detection.
+     */
+    public ProficiencyLevel getPreviousLevel(String id) {
+        return previousLevels.getOrDefault(id, ProficiencyLevel.UNTRAINED);
+    }
+
+    /**
+     * Updates the stored previous level after a level-up notification.
+     */
+    public void setPreviousLevel(String id, ProficiencyLevel level) {
+        previousLevels.put(id, level);
+    }
+
+    /**
+     * Gets config thresholds for a given category.
+     * Maps category names to config threshold arrays.
+     */
+    private long[] getThresholdsForCategory(String category) {
+        ProficiencyConfig config = ProficiencyConfig.get();
+
+        return switch (category.toLowerCase()) {
+            case "pickaxe", "axe", "shovel", "hoe", "shears", "fishing_rod" ->
+                    config.tools.getScaledThresholds(config.useExponentialScaling);
+            case "sword", "trident", "bow", "crossbow" ->
+                    config.weapons.getScaledThresholds(config.useExponentialScaling);
+            case "helmet", "chestplate", "leggings", "boots", "elytra" ->
+                    config.armour.getScaledThresholds(config.useExponentialScaling);
+            default ->
+                    config.tools.getScaledThresholds(config.useExponentialScaling);
+        };
+    }
+
+    /**
+     * Gets the main category for an item type (tools, weapons, or armour).
+     */
+    private String getMainCategory(String itemType) {
+        return switch (itemType.toLowerCase()) {
+            case "pickaxe", "axe", "shovel", "hoe", "shears", "fishing_rod" -> "tools";
+            case "sword", "trident", "bow", "crossbow" -> "weapons";
+            case "helmet", "chestplate", "leggings", "boots", "elytra" -> "armour";
+            default -> "tools";
+        };
+    }
+
+    /**
+     * Checks if special unlock levels (VIRTUOSO, LEGENDARY, UNRIVALED) should be awarded.
+     * Called after adding points to update special progression.
+     */
+    public ProficiencyLevel calculateSpecialUnlock(String itemType) {
+        String mainCategory = getMainCategory(itemType);
+        ProficiencyConfig config = ProficiencyConfig.get();
+        ProficiencyConfig.CategoryThresholds thresholds = switch (mainCategory) {
+            case "weapons" -> config.weapons;
+            case "armour" -> config.armour;
+            default -> config.tools;
+        };
+
+        Progress categoryProgress = getType(itemType);
+        if (categoryProgress == null) return ProficiencyLevel.MASTERFUL;
+
+        // Count items at PROFICIENT or higher in this category
+        int proficientCount = 0;
+        for (Progress itemProg : itemProgress.values()) {
+            if (itemProg.level.atLeast(ProficiencyLevel.PROFICIENT)) {
+                proficientCount++;
+            }
+        }
+
+        long totalPoints = categoryProgress.points;
+
+        // Check unlock conditions in descending order
+        if (proficientCount >= thresholds.unrivaledItemsRequired &&
+                totalPoints >= thresholds.unrivaledThreshold) {
+            return ProficiencyLevel.UNRIVALED;
+        }
+
+        if (proficientCount >= thresholds.legendaryItemsRequired &&
+                totalPoints >= thresholds.legendaryThreshold) {
+            return ProficiencyLevel.LEGENDARY;
+        }
+
+        if (proficientCount >= thresholds.virtuosoItemsRequired &&
+                totalPoints >= thresholds.virtuosoThreshold) {
+            return ProficiencyLevel.VIRTUOSO;
+        }
+
+        return ProficiencyLevel.MASTERFUL;
+    }
+
+    /**
+     * Ensures an ItemStack has a unique UUID for tracking.
+     * Creates and stores a UUID if one doesn't exist.
+     */
     public static UUID ensureItemUuid(ItemStack stack) {
         NbtCompound nbt = stack.getOrCreateNbt();
 
-        // If the UUID doesn't exist, create and store
         if (!nbt.containsUuid(ITEM_UUID_KEY)) {
             UUID id = UUID.randomUUID();
             nbt.putUuid(ITEM_UUID_KEY, id);
             return id;
         }
-        // If the UUID does exist, retrieve and return it
         return nbt.getUuid(ITEM_UUID_KEY);
     }
 
     @Override
     public void readFromNbt(NbtCompound tag) {
-        // Clear existing data
         typeProgress.clear();
         itemProgress.clear();
+        previousLevels.clear();
 
         // Load type progress
         NbtCompound typeNbt = tag.getCompound("types");
         for (String key : typeNbt.getKeys()) {
-            Identifier typeId = new Identifier(key);
             Progress progress = Progress.fromNbt(typeNbt.getCompound(key));
-            typeProgress.put(typeId, progress);
+            typeProgress.put(key, progress);
         }
 
         // Load item progress
         NbtCompound itemNbt = tag.getCompound("items");
         for (String key : itemNbt.getKeys()) {
-            UUID itemId = UUID.fromString(key);
-            Progress progress = Progress.fromNbt(itemNbt.getCompound(key));
-            itemProgress.put(itemId, progress);
+            try {
+                UUID itemId = UUID.fromString(key);
+                Progress progress = Progress.fromNbt(itemNbt.getCompound(key));
+                itemProgress.put(itemId, progress);
+            } catch (IllegalArgumentException e) {
+                // Skip invalid UUIDs
+            }
+        }
+
+        // Load previous levels
+        NbtCompound prevNbt = tag.getCompound("previousLevels");
+        for (String key : prevNbt.getKeys()) {
+            try {
+                ProficiencyLevel level = ProficiencyLevel.valueOf(prevNbt.getString(key));
+                previousLevels.put(key, level);
+            } catch (IllegalArgumentException e) {
+                // Skip invalid levels
+            }
         }
     }
 
@@ -153,8 +280,8 @@ public class ProficiencyData implements Component {
     public void writeToNbt(NbtCompound tag) {
         // Save type progress
         NbtCompound typeNbt = new NbtCompound();
-        for (Map.Entry<Identifier, Progress> entry : typeProgress.entrySet()) {
-            typeNbt.put(entry.getKey().toString(), entry.getValue().toNbt());
+        for (Map.Entry<String, Progress> entry : typeProgress.entrySet()) {
+            typeNbt.put(entry.getKey(), entry.getValue().toNbt());
         }
         tag.put("types", typeNbt);
 
@@ -164,20 +291,12 @@ public class ProficiencyData implements Component {
             itemNbt.put(entry.getKey().toString(), entry.getValue().toNbt());
         }
         tag.put("items", itemNbt);
-    }
 
-    // For backward compatibility
-    public NbtCompound toNbt() {
-        NbtCompound tag = new NbtCompound();
-        writeToNbt(tag);
-        return tag;
+        // Save previous levels
+        NbtCompound prevNbt = new NbtCompound();
+        for (Map.Entry<String, ProficiencyLevel> entry : previousLevels.entrySet()) {
+            prevNbt.putString(entry.getKey(), entry.getValue().name());
+        }
+        tag.put("previousLevels", prevNbt);
     }
-
-    // For backward compatibility
-    public static ProficiencyData fromNbt(NbtCompound nbt) {
-        ProficiencyData data = new ProficiencyData();
-        data.readFromNbt(nbt);
-        return data;
-    }
-
 }
