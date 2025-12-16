@@ -47,7 +47,7 @@
 
   "_comment": "SHARED: SPECIAL UNLOCKS",
   "text.proficiency.general_heading": "\nSpecial Unlocks Settings",
-  "text.proficiency.special_unlocks_description": "These are special progression levels unlockable by both:\n  - Levelling a \"number\" of items to \"Proficient\"\n  - Reaching \"number\" of points for that item type\n   (Where \"number\" is a value set in the below fields)",
+  "text.proficiency.special_unlocks_description": "These are special progression levels unlockable by both:\n  - Levelling a §onumber§r of items to \"Proficient\"\n  - Reaching §onumber§r of points for that item type\n   (Where §onumber§r is a value set in the below fields)",
   "text.proficiency.special_unlocks_example": "e.g. To unlock the Legendary Progression level for a pickaxe, (using the default values) you need to get 3 items to, or above,  Proficient\nYou then need to reach 25000 Progression points on that item",
 
   "option.proficiency.virtuoso_items_label": "Virtuoso Items",

@@ -6,10 +6,28 @@ import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 
 @Environment(EnvType.CLIENT)
 public class ProficiencyConfigScreen {
+
+    // Helper methods for text formatting
+    private static Text styledHeading(String key) {
+        return Text.translatable(key)
+                .setStyle(Style.EMPTY
+                .withBold(true)
+                );
+    }
+
+    private static Text styledItalics(String key) {
+        return Text.translatable(key)
+                .setStyle(Style.EMPTY
+                .withItalic(true)
+                );
+    }
+
+    // Config screen builder class
     public static Screen create(Screen parent) {
         ProficiencyConfig config = ProficiencyConfig.get();
         ConfigBuilder builder = ConfigBuilder.create()
@@ -109,7 +127,7 @@ public class ProficiencyConfigScreen {
 
         // Tools/Weapons/Armour Proficiency threshold heading
         category.addEntry(entryBuilder
-                .startTextDescription(Text.translatable("text.proficiency.item_category_heading"))
+                .startTextDescription(styledHeading("text.proficiency.item_category_heading"))
                 .build()
         );
 
@@ -137,7 +155,7 @@ public class ProficiencyConfigScreen {
 
         // Section heading
         category.addEntry(entryBuilder
-                .startTextDescription(Text.translatable("text.proficiency.general_heading"))
+                .startTextDescription(styledHeading("text.proficiency.general_heading"))
                 .build()
         );
         // Special unlocks description
