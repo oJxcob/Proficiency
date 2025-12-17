@@ -6,6 +6,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -47,7 +48,7 @@ public class PlayerDamageMixin {
             String armorType = getArmorType(slot);
             if (armorType == null) continue;
 
-            ProficiencyData data = ProficiencyComponents.PROFICIENCY.get(serverPlayer);
+            ProficiencyData data = ProficiencyComponents.getProficiency().get(serverPlayer);
             String itemUuid = ProficiencyData.ensureItemUuid(armor).toString();
 
             // Award points
@@ -55,13 +56,14 @@ public class PlayerDamageMixin {
             data.addPoints(itemUuid, points);
         }
 
-        ProficiencyComponents.PROFICIENCY.sync(serverPlayer);
+        ProficiencyComponents.getProficiency().sync(serverPlayer);
     }
 
     /**
      * Calculates points based on damage amount.
      * Higher damage = more points (you're using armor effectively).
      */
+    @Unique
     private int calculateArmorPoints(float damage) {
         if (damage < 2.0f) return 1;
         if (damage < 5.0f) return 2;
@@ -72,6 +74,7 @@ public class PlayerDamageMixin {
     /**
      * Maps equipment slot to armor category name.
      */
+    @Unique
     private String getArmorType(EquipmentSlot slot) {
         return switch (slot) {
             case HEAD -> "helmet";

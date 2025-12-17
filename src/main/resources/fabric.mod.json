@@ -1,6 +1,11 @@
 {
   "schemaVersion": 1,
   "id": "proficiency",
+  "custom": {
+    "cardinal-components": [
+      "proficiency:proficiency"
+    ]
+  },
   "version": "${version}",
   "name": "Proficiency",
   "description": "Adds levels to items, the more you use them the more effective they become.",
@@ -16,11 +21,11 @@
   "environment": "*",
 
   "entrypoints": {
-    "main": [
-      "proficiency.modid.Proficiency"
-    ],
     "client": [
       "proficiency.modid.ProficiencyClient"
+    ],
+    "server": [
+      "proficiency.modid.Proficiency"
     ],
     "cardinal-components": [
       "proficiency.modid.component.ProficiencyComponents"

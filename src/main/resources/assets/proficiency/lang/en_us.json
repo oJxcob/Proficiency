@@ -9,7 +9,7 @@
   "option.proficiency.exponential_scaling": "Use Exponential Scaling",
   "tooltip.proficiency.exponential_scaling": "Use exponential scaling instead of values defined on the tools/weapons/armour pages",
 
-  "text.proficiency.expo_equation": "   This is calculated using:\n  • Base * (Multiplier^Exponent)",
+  "text.proficiency.expo_equation": "  This is calculated using:\n   • Base * (Multiplier^Exponent)",
   "text.proficiency.points_description": "The number of points a player needs to gain for each level is calculated using the exponential formula above.\nDepending on the values set, this can make progression significantly (exponentially) slower at higher levels.",
 
   "option.proficiency.expo_base": "Base",
@@ -37,7 +37,7 @@
 
   "_comment": "SHARED: THRESHOLD SETTINGS",
   "text.proficiency.item_category_heading": "Item Type Progression Settings",
-  "text.proficiency.item_category_description": "These are set values for the points required to reach each Proficiency level",
+  "text.proficiency.item_category_description": "The values below are the number of points required to reach each Proficiency level\nThese values are used if the \"Use Exponential Scaling\" is set to \"No\" in the General settings page",
 
 
   "_comment": "SHARED: BASE THRESHOLDS",
@@ -63,5 +63,17 @@
   "option.proficiency.unrivaled_items_label": "Unrivaled Items",
   "tooltip.proficiency.unrivaled_items": "Number of items at PROFICIENT+ to unlock Unrivaled",
   "option.proficiency.unrivaled_threshold_label": "Unrivaled Points",
-  "tooltip.proficiency.unrivaled_threshold": "Points required for Unrivaled level"
+  "tooltip.proficiency.unrivaled_threshold": "Points required for Unrivaled level",
+
+
+
+  "_comment" : "COMMAND SECTION",
+  "commands.proficiency.get.category": "%s's %s proficiency: %s",
+  "commands.proficiency.get.item": "%s's %s proficiency: %s",
+  "commands.proficiency.set.category": "Set %s's %s proficiency to %s",
+  "commands.proficiency.set.item": "Set %s's %s proficiency to %s",
+  "commands.proficiency.points.get.category": "%s's %s points: %d",
+  "commands.proficiency.points.get.item": "%s's %s points: %d",
+  "commands.proficiency.points.set.category": "Set %s's %s points to %d",
+  "commands.proficiency.points.set.item": "Set %s's %s points to %d"
 }

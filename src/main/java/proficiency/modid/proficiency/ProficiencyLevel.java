@@ -29,7 +29,7 @@ public enum ProficiencyLevel {
 
     // Boolean checks and returns true if `this` level is at least `other` level
     public boolean atLeast(ProficiencyLevel other) {
-        return this.ordinal() >= other.ordinal(); // i.e EXPERT.atLeast(PROFICIENT) | Returns true (as 12 >= 8)
+        return this.ordinal() >= other.ordinal(); // e.g. EXPERT.atLeast(PROFICIENT) | Returns true (as 12 >= 8)
     }
 
     // Clamps `this` level to base progression, so UNTRAINED to MASTERFUL

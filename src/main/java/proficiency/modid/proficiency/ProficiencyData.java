@@ -167,6 +167,16 @@ public class ProficiencyData implements Component {
     }
 
     /**
+     * Public accessor for getting thresholds for a category.
+     * @param category The category to get thresholds for
+     * @return Array of threshold points for each level
+     */
+    public long[] getPublicThresholdsForCategory(String category) {
+        return getThresholdsForCategory(category);
+    }
+
+
+    /**
      * Gets the main category for an item type (tools, weapons, or armour).
      */
     private String getMainCategory(String itemType) {

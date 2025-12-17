@@ -10,17 +10,18 @@ import proficiency.modid.Proficiency;
 import proficiency.modid.proficiency.ProficiencyData;
 
 public final class ProficiencyComponents implements EntityComponentInitializer {
-
-    // Initialize ComponentKey immediately as a static field
     public static final ComponentKey<ProficiencyData> PROFICIENCY =
             ComponentRegistry.getOrCreate(
                     new Identifier(Proficiency.MOD_ID, "proficiency"),
                     ProficiencyData.class
             );
 
+    public static ComponentKey<ProficiencyData> getProficiency() {
+        return PROFICIENCY;
+    }
+
     @Override
     public void registerEntityComponentFactories(EntityComponentFactoryRegistry registry) {
-        // Register for players with the already-created key
         registry.registerForPlayers(
                 PROFICIENCY,
                 player -> new ProficiencyData(),

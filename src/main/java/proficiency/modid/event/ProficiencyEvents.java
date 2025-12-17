@@ -20,6 +20,7 @@ import proficiency.modid.proficiency.ProficiencyLevel;
 
 public class ProficiencyEvents {
 
+
     public static void register() {
         // Register event listeners
         PlayerBlockBreakEvents.AFTER.register(ProficiencyEvents::onBlockBreak);
@@ -28,8 +29,8 @@ public class ProficiencyEvents {
     }
 
     /**
-     * Called when a player breaks a block.
-     * Awards points based on tool type used.
+     * Called when a player breaks a block
+     * Awards points based on tool type used
      */
     private static void onBlockBreak(World world, PlayerEntity player, BlockPos pos, BlockState state, @Nullable net.minecraft.block.entity.BlockEntity blockEntity) {
         if (world.isClient || !(player instanceof ServerPlayerEntity serverPlayer)) {
@@ -47,8 +48,8 @@ public class ProficiencyEvents {
     }
 
     /**
-     * Called when a player attacks an entity.
-     * Awards points for weapon usage.
+     * Called when a player attacks an entity
+     * Awards points for weapon usage
      */
     private static ActionResult onAttackEntity(PlayerEntity player, World world, Hand hand,
                                                net.minecraft.entity.Entity entity, @Nullable EntityHitResult hitResult) {
@@ -68,8 +69,8 @@ public class ProficiencyEvents {
     }
 
     /**
-     * Called when a player uses an item (right-click).
-     * Awards points for special tool usage like fishing rods.
+     * Called when a player uses an item (right-click)
+     * Awards points for special tool usage like fishing rods
      */
     private static TypedActionResult<ItemStack> onUseItem(PlayerEntity player, World world, Hand hand) {
         if (world.isClient || !(player instanceof ServerPlayerEntity serverPlayer)) {
@@ -88,14 +89,14 @@ public class ProficiencyEvents {
     }
 
     /**
-     * Awards points to both the item category and individual item instance.
-     * Handles level-up detection and notification.
+     * Awards points to both the item category and individual item instance
+     * Handles level-up detection and notification
      */
     private static void awardPoints(ServerPlayerEntity player, ItemStack stack, String category, long points) {
         if (points <= 0) return;
 
-        ProficiencyData data = ProficiencyComponents.PROFICIENCY.get(player);
-
+        // Initialise data object for storing player levels
+        ProficiencyData data = ProficiencyComponents.getProficiency().get(player);
         // Get/create UUID for this specific item
         String itemUuid = ProficiencyData.ensureItemUuid(stack).toString();
 
@@ -119,7 +120,7 @@ public class ProficiencyEvents {
         }
 
         // Sync data to client
-        ProficiencyComponents.PROFICIENCY.sync(player);
+        ProficiencyComponents.getProficiency().sync(player);
 
         // Check for level-ups
         checkLevelUp(player, data, category, oldCategoryLevel, newCategoryLevel, capitalize(category));
@@ -149,7 +150,7 @@ public class ProficiencyEvents {
         if (newLevel != null && (oldLevel == null || newLevel.ordinal() > oldLevel.ordinal())) {
             // Level up message
             player.sendMessage(
-                    Text.literal(String.format("%s %s proficiency increased to %s!",
+                    Text.literal(String.format("%s proficiency increased to %s!",
                             displayName,
                             formatLevelName(newLevel)
                     )),
