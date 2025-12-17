@@ -126,22 +126,32 @@ public class ProficiencyEvents {
         checkLevelUp(player, data, itemUuid, oldItemLevel, data.getLevel(itemUuid), stack.getName().getString());
     }
 
+
+    /**
+     * Plays a sound effect when a player levels up.
+     * Uses note block sounds with different pitches based on level.
+     */
+    private static void playSoundForLevel(ServerPlayerEntity player, ProficiencyLevel level) {
+        float pitch = 0.5f + (level.ordinal() * 0.1f); // Higher level = higher pitch
+        player.playSound(net.minecraft.sound.SoundEvents.BLOCK_NOTE_BLOCK_BELL.value(),
+                1.0f,
+                Math.min(2.0f, pitch)); // Cap pitch at 2.0
+    }
+
+
     /**
      * Checks if a level-up occurred and sends a notification message.
-     * Overloaded version that accepts both old and new levels directly.
+     * May change, I'll either add a UI or something similar
      */
     private static void checkLevelUp(ServerPlayerEntity player, ProficiencyData data,
-                                     String id, ProficiencyLevel oldLevel, ProficiencyLevel newLevel, String displayName) {
-
-        if (newLevel != oldLevel && newLevel.ordinal() > oldLevel.ordinal()) {
-            // Determine message color and style based on level tier
-            String color = getColorForLevel(newLevel);
-            String prefix = newLevel.ordinal() >= ProficiencyLevel.VIRTUOSO.ordinal() ? "§l" : "";
-
+                                     String id, ProficiencyLevel oldLevel,
+                                     ProficiencyLevel newLevel, String displayName) {
+        if (newLevel != null && (oldLevel == null || newLevel.ordinal() > oldLevel.ordinal())) {
             // Level up message
             player.sendMessage(
-                    Text.literal(String.format("%s%s%s proficiency increased to %s%s!",
-                            color, prefix, displayName, formatLevelName(newLevel), color
+                    Text.literal(String.format("%s %s proficiency increased to %s!",
+                            displayName,
+                            formatLevelName(newLevel)
                     )),
                     false
             );
@@ -153,43 +163,6 @@ public class ProficiencyEvents {
         }
     }
 
-    /**
-     * Returns color code based on proficiency tier.
-     */
-    private static String getColorForLevel(ProficiencyLevel level) {
-        if (level.ordinal() >= ProficiencyLevel.UNRIVALED.ordinal()) return "§6"; // Gold
-        if (level.ordinal() >= ProficiencyLevel.LEGENDARY.ordinal()) return "§5"; // Purple
-        if (level.ordinal() >= ProficiencyLevel.VIRTUOSO.ordinal()) return "§b"; // Aqua
-        if (level.ordinal() >= ProficiencyLevel.PROFICIENT.ordinal()) return "§e"; // Yellow
-        return "§a"; // Green
-    }
-
-    /**
-     * Plays a sound effect based on level tier.
-     */
-    private static void playSoundForLevel(ServerPlayerEntity player, ProficiencyLevel level) {
-        net.minecraft.sound.SoundEvent sound;
-        float pitch;
-
-        if (level.ordinal() >= ProficiencyLevel.UNRIVALED.ordinal()) {
-            sound = net.minecraft.sound.SoundEvents.UI_TOAST_CHALLENGE_COMPLETE;
-            pitch = 1.0f;
-        } else if (level.ordinal() >= ProficiencyLevel.LEGENDARY.ordinal()) {
-            sound = net.minecraft.sound.SoundEvents.ENTITY_PLAYER_LEVELUP;
-            pitch = 2.0f;
-        } else if (level.ordinal() >= ProficiencyLevel.VIRTUOSO.ordinal()) {
-            sound = net.minecraft.sound.SoundEvents.ENTITY_PLAYER_LEVELUP;
-            pitch = 1.5f;
-        } else if (level.ordinal() >= ProficiencyLevel.PROFICIENT.ordinal()) {
-            sound = net.minecraft.sound.SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP;
-            pitch = 1.5f;
-        } else {
-            sound = net.minecraft.sound.SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP;
-            pitch = 1.0f;
-        }
-
-        player.playSound(sound, net.minecraft.sound.SoundCategory.PLAYERS, 1.0f, pitch);
-    }
 
     /**
      * Determines tool type based on item class and effectiveness.

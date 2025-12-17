@@ -3,7 +3,6 @@ package proficiency.modid.proficiency;
 import dev.onyxstudios.cca.api.v3.component.Component;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.Identifier;
 import proficiency.modid.config.ProficiencyConfig;
 
 import java.util.HashMap;
